@@ -1,13 +1,22 @@
 FROM php:8.3-fpm
 
+# Install NGINX and other dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    && apt-get clean
+
+# Copy NGINX config
+COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Configure supervisord to run php-fpm and nginx together
+COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Install any extensions you need here, e.g.:
-# RUN docker-php-ext-install pdo pdo_mysql
+# Expose port
+EXPOSE 80
 
-# Copy source code (optional if using volumes)
-# COPY . /var/www/html
+CMD ["/usr/bin/supervisord"]
 
-# Set permissions (optional if volumes handle it)
-RUN chown -R www-data:www-data /var/www/html
